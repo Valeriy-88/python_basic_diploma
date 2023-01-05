@@ -10,3 +10,5 @@ pip3.exe
 python.exe
 pythonw.exe
 pyvenv.cfg
+Lib
+Scripts
