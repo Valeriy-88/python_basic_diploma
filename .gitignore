@@ -1,0 +1,12 @@
+/env/pyvenv.cfg
+distutils-precedence.pth
+activate
+activate.bat
+Activate.ps1
+deactivate.bat
+pip.exe
+pip3.10.exe
+pip3.exe
+python.exe
+pythonw.exe
+pyvenv.cfg
