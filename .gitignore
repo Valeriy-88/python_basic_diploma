@@ -13,3 +13,4 @@ pyvenv.cfg
 Lib
 Scripts
 requirements.txt
+.env.template
