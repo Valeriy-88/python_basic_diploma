@@ -11,7 +11,13 @@ offset = 0
 
 
 @bot.message_handler(commands=['custom'])
-def product_selection(message: Message) -> None:
+def applying_service_filter(message: Message) -> None:
+    """
+    Функция реагирует при вводе команды /low.
+    При вводе команды, выводиться сообщение с вариантами ответа в виде кнопок
+    :param message: str
+    :return: None
+    """
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("да", callback_data='yes'),
                  InlineKeyboardButton("нет", callback_data='no'))
@@ -19,9 +25,17 @@ def product_selection(message: Message) -> None:
 
 
 @bot.callback_query_handler(func=lambda  c: c.data[:6] in ['yes', 'no'])
-def callback(call):
+def reaction_user_choice(call) -> None:
+    """
+    Функция ожидает от пользователя нажатие на кнопку и соответственно реагирует.
+    Если пользователь выбрал "да", то выводит сообщение и список услуг в виде кнопок.
+    Если пользователь выбрал "нет", то пропускает выбор услуг и выводит сообщение с ожиданием ответа.
+    :param call: Callback_data
+    :return: None
+    """
     if call.data == 'yes':
-        bot.send_message(call.from_user.id, 'Выберите интересующие вас услуги', reply_markup=choice([]))
+        bot.send_message(call.from_user.id, 'Выберите интересующие вас услуги',
+                         reply_markup=displaying_scroll_services([]))
         bot.set_state(call.from_user.id, UserAnswerState.service)
     elif call.data == 'no':
         bot.send_message(call.from_user.id, 'Введите минимальную стоимость номера в отеле за сутки')
@@ -29,7 +43,14 @@ def callback(call):
 
 
 @bot.message_handler(state=UserAnswerState.service)
-def choice(active_leagues: list) -> InlineKeyboardMarkup:
+def displaying_scroll_services(active_leagues: list) -> InlineKeyboardMarkup:
+    """
+    Функция отображает в телеграм боте список услуг в виде кнопок.
+    При на нажатии на кнопку ставится галочка и услуга записывается в список выбранных.
+    При повторном нажатии на ту же кнопку, услуга удаляется из списка выбранных.
+    :param active_leagues: List
+    :return: keyboard
+    """
     keyboard = InlineKeyboardMarkup()
     service_keys = list(config.BOT_SERVICE.keys())[0 + offset:9 + offset]
     for key in service_keys:
@@ -55,18 +76,26 @@ def choice(active_leagues: list) -> InlineKeyboardMarkup:
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def callback(call):
+def reaction_user_choice(call):
+    """
+    Функция реагирует при нажатии на кнопку.
+    При нажатии "Вперед ->" функция выводит следующий список услуг.
+    При нажатии "Назад <-" функция выводит изначальный список услуг.
+    При нажатии "Сохранить" функция сохраняет выбранные услуги.
+    :param call: Callback_data
+    :return: None
+    """
     global offset
     if call.data == 'edit_config#9':
         offset += 9
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text='Выберите интересующие вас услуги',
-                              reply_markup=choice(scroll_service))
+                              reply_markup=displaying_scroll_services(scroll_service))
     elif call.data == 'edit_config#0':
         offset -= 9
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text='Выберите интересующие вас услуги',
-                              reply_markup=choice(scroll_service))
+                              reply_markup=displaying_scroll_services(scroll_service))
     elif call.data == 'save_config':
         bot.set_state(call.from_user.id, UserAnswerState.low_value)
         answer_user.service = scroll_service
@@ -75,8 +104,12 @@ def callback(call):
         set_or_update_config(call)
 
 
-def update_leagues(data: str):
-    """Функция добавляет или удаляет id услуги"""
+def update_list_services(data: str) -> None:
+    """
+    Функция добавляет или удаляет id выбранной услуги.
+    :param data: Str
+    :return: None
+    """
     global scroll_service
     service_id = data.split("#")[-1]
     if data.startswith("add"):
@@ -86,16 +119,26 @@ def update_leagues(data: str):
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def set_or_update_config(call):
-    """Получение или обновление выбранных услуг"""
-    update_leagues(call.data)
+def set_or_update_config(call) -> None:
+    """
+    Функция получает или обновляет список выбранных услуг
+    :param call: Callback_data
+    :return: None
+    """
+    update_list_services(call.data)
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text='Выберите интересующие вас услуги',
-                          reply_markup=choice(scroll_service))
+                          reply_markup=displaying_scroll_services(scroll_service))
 
 
 @bot.message_handler(state=UserAnswerState.low_value)
-def minimum_index(message: Message) -> None:
+def minimum_room_price(message: Message) -> None:
+    """
+    Функция ожидает от пользователя стоимость номера за сутки.
+    При вводе числа, записывает его в класс состояний для дальнейшего использования в программе.
+    :param message: Str
+    :return: None
+    """
     if message.text.isdigit():
         bot.send_message(message.from_user.id, 'Введите максимальную стоимость номера в отеле за сутки')
         bot.set_state(message.from_user.id, UserAnswerState.high_value, message.chat.id)
@@ -107,7 +150,13 @@ def minimum_index(message: Message) -> None:
 
 
 @bot.message_handler(state=UserAnswerState.high_value)
-def highest_value(message: Message) -> None:
+def maximum_room_price(message: Message) -> None:
+    """
+    Функция ожидает от пользователя стоимость номера за сутки.
+    При вводе числа, записывает его в класс состояний для дальнейшего использования в программе.
+    :param message: Str
+    :return: None
+    """
     if message.text.isdigit():
         bot.send_message(message.from_user.id, 'Введите интересующее количество отелей')
         bot.set_state(message.from_user.id, UserAnswerState.amount_product, message.chat.id)
@@ -120,6 +169,12 @@ def highest_value(message: Message) -> None:
 
 @bot.message_handler(state=UserAnswerState.amount_product)
 def number_hotels(message: Message) -> None:
+    """
+    Функция ожидает от пользователя ввод количества отелей для вывода на дисплей.
+    При вводе числа, записывает его в класс состояний для дальнейшего использования в программе.
+    :param message: Str
+    :return: None
+    """
     if message.text.isdigit():
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data['amount_product'] = message.text
