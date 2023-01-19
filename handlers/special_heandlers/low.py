@@ -24,7 +24,7 @@ def applying_service_filter(message: Message) -> None:
     bot.send_message(message.from_user.id, 'Применить фильтр услуг?', reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda c: c.data[:6] in ['yes', 'no'])
+@bot.callback_query_handler(func=lambda answer_user: answer_user.data[:6] in ['yes', 'no'])
 def reaction_user_choice(call) -> None:
     """
     Функция ожидает от пользователя нажатие на кнопку и соответственно реагирует.
@@ -43,18 +43,18 @@ def reaction_user_choice(call) -> None:
 
 
 @bot.message_handler(state=UserAnswerState.service)
-def displaying_scroll_services(active_leagues: list) -> InlineKeyboardMarkup:
+def displaying_scroll_services(selected_services: list) -> InlineKeyboardMarkup:
     """
     Функция отображает в телеграм боте список услуг в виде кнопок.
     При на нажатии на кнопку ставится галочка и услуга записывается в список выбранных.
     При повторном нажатии на ту же кнопку, услуга удаляется из списка выбранных.
-    :param active_leagues: List
+    :param selected_services: List
     :return: keyboard
     """
     keyboard = InlineKeyboardMarkup()
     service_keys = list(config.BOT_SERVICE.keys())[0 + offset:9 + offset]
     for key in service_keys:
-        if key in active_leagues:
+        if key in selected_services:
             keyboard.add(InlineKeyboardButton(
                 f"{emojize('✅')} {config.BOT_SERVICE[key]}",
                 callback_data=f'del_league_#{offset}#{key}'
