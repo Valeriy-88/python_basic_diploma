@@ -1,6 +1,7 @@
 from dotenv import load_dotenv, find_dotenv
 import os
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 if not find_dotenv():
@@ -9,66 +10,34 @@ else:
     load_dotenv()
 
 SECRET_KEY = os.getenv('MY_TOKEN')
-RAPID_API_KEY = os.getenv('RAPID_API_KEY')
+
 DEFAULT_COMMANDS = (
     ('help', "Помощь по командам бота"),
-    ('low', "Ввод минимальных показателей"),
-    ('high', "Ввод максимальных показателей"),
-    ('custom', "Ввод показателей пользовательского диапазона"),
+    ('low', "Поиск отелей с минимальной стоимостью за номер"),
+    ('high', "Поиск отелей с максимальной стоимостью за номер"),
+    ('custom', "Поиск отелей в диапазоне стоимости за номер"),
     ('history', "Вывод истории запросов пользователей")
 )
 
 BOT_VERSION = 0.1
-# База данных хранит выбранные юзером услуги
-BOT_DB_NAME = "users_leagues"
-# Тестовые данные поддерживаемых услуг
-BOT_SERVICE = {
-    "1": "Wi-Fi",
-    "2": "Автостоянка / Парковка",
-    "3": "Бассейн",
-    "4": "ЖК-телевизор",
-    "5": "Холодильник",
-    "6": "Библиотека",
-    "7": "Удобства для гостей с ограниченными физическими возможностями",
-    "8": "Кондиционер",
-    "9": "Прачечная или Химчистка",
-    "10": "Бар / Ресторан",
-    "11": "Сауна / SPA",
-    "12": "Сейф",
-    "13": "Допускается размещение домашних животных",
-    "14": "Трансфер",
-    "15": "Бильярдная",
-    "16": "Сайт",
-    "17": "Фитнес-центр / Тренажерный зал",
-    "18": "Конференц-зал",
-}
-# Флаги для сообщений, emoji-код
-BOT_SERVICE_FLAGS = {
-    "1": "Wi-Fi",
-    "2": "Автостоянка / Парковка",
-    "3": "Бассейн",
-    "4": "ЖК-телевизор",
-    "5": "Холодильник",
-    "6": "Библиотека",
-    "7": "Удобства для гостей с ограниченными физическими возможностями",
-    "8": "Кондиционер",
-    "9": "Прачечная или Химчистка",
-    "11": "Бар / Ресторан",
-    "12": "Сауна / SPA",
-    "13": "Сейф",
-    "14": "Допускается размещение домашних животных",
-    "15": "Трансфер",
-    "16": "Бильярдная",
-    "17": "Сайт",
-    "18": "Фитнес-центр / Тренажерный зал",
-    "19": "Конференц-зал",
-}
+BOT_DB_NAME = "users_options"
 
-# Данные redis-клиента
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-# По умолчанию пароля нет. Он будет на сервере
 REDIS_PASSWORD = None
 
-MINUTE = 60
-YEAR = 60*60*24*366
+RAPID_API_KEY = "41ab3025damshc061f7d76ce4dc0p1a130bjsn19033d53b54b"
+RAPID_API_HOST = "hotels4.p.rapidapi.com"
+city_search = "https://hotels4.p.rapidapi.com/locations/v3/search"
+hotel_search = "https://hotels4.p.rapidapi.com/properties/v2/list"
+
+headers_city_search = {
+    "X-RapidAPI-Key": RAPID_API_KEY,
+    "X-RapidAPI-Host": RAPID_API_HOST
+}
+
+headers_hotel_search = {
+    "content-type": "application/json",
+    "X-RapidAPI-Key": RAPID_API_KEY,
+    "X-RapidAPI-Host": RAPID_API_HOST
+}
