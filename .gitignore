@@ -12,3 +12,4 @@ pythonw.exe
 pyvenv.cfg
 Lib
 Scripts
+users_options.db
